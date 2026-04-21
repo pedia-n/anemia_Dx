@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="貧血鑑別">
+<meta name="theme-color" content="#1F3864">
+<link rel="manifest" href="manifest.json">
+<title>貧血鑑別アシスタント</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f2f4f7;
+  --card:#fff;
+  --border:#e2e5ea;
+  --text:#1a202c;
+  --text2:#4a5568;
+  --text3:#718096;
+  --blue-bg:#ebf4ff;
+  --blue:#2b6cb0;
+  --amber-bg:#fffbeb;
+  --amber:#92400e;
+  --red-bg:#fff5f5;
+  --red:#c53030;
+  --green-bg:#f0fff4;
+  --green:#276749;
+  --navy:#1F3864;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;font-size:14px}
+.header{background:var(--navy);color:#fff;padding:calc(var(--safe-top) + 12px) 1rem 12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.header-inner{display:flex;align-items:center;gap:10px}
+.header-icon{width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.header h1{font-size:15px;font-weight:600}
+.header p{font-size:10px;opacity:0.65;margin-top:1px}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:99;overflow-x:auto}
+.tab{flex:1;min-width:80px;padding:10px 8px;font-size:12px;font-weight:500;color:var(--text3);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap}
+.tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.page{display:none;padding:1rem;padding-bottom:calc(var(--safe-bottom) + 1rem)}
+.page.active{display:block}
+.section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.85rem}
+.section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.85rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text2)}
+.field input,.field select{font-size:16px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;outline:none;background:#fff;color:var(--text);width:100%;appearance:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:#3182ce;box-shadow:0 0 0 3px rgba(49,130,206,0.12)}
+.unit{font-size:10px;color:var(--text3);margin-top:1px}
+.radio-group{display:flex;gap:6px;margin-top:4px}
+.radio-btn{flex:1;padding:9px 4px;font-size:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;color:var(--text2);font-weight:500;user-select:none;transition:all 0.12s;active-scale:0.96}
+.radio-btn.active{background:var(--blue-bg);color:var(--blue);border-color:#bee3f8}
+.radio-btn:active{opacity:0.7}
+.btn-run{width:100%;padding:15px;font-size:16px;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;border:none;border-radius:12px;margin-top:0.5rem;letter-spacing:0.04em}
+.btn-run:active{opacity:0.75}
+.result-wrap{padding:1rem;padding-bottom:calc(var(--safe-bottom) + 1rem)}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:13px;line-height:1.7}
+.rpi-card{background:#eef4ff;border:1px solid #c3d5f0;border-radius:10px;padding:0.85rem 1rem;margin-bottom:0.85rem}
+.rpi-label{font-size:10px;font-weight:700;color:#2b6cb0;letter-spacing:0.05em;margin-bottom:4px}
+.rpi-val{font-size:24px;font-weight:700;color:var(--navy)}
+.rpi-desc{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5}
+.dx-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.75rem}
+.dx-header-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.dx-name{font-size:14px;font-weight:700;color:var(--text)}
+.dx-desc{font-size:12px;color:var(--text2);line-height:1.65}
+.next-card{background:#f7f9fc;border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.75rem}
+.next-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.next-list{list-style:none;padding:0}
+.next-list li{font-size:12px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:flex-start}
+.next-list li:last-child{border-bottom:none}
+.next-list li::before{content:"→";color:var(--text3);flex-shrink:0}
+.warn-card{background:#fffbeb;border:1px solid #fbd38d;border-radius:10px;padding:10px 12px;font-size:12px;color:#92400e;margin-bottom:0.75rem}
+.calc-card{background:#f0fff4;border:1px solid #c6f6d5;border-radius:10px;padding:10px 12px;font-size:12px;color:#276749;margin-bottom:0.75rem}
+.disclaimer{font-size:10px;color:var(--text3);line-height:1.6;padding:12px;text-align:center}
+.install-banner{background:linear-gradient(135deg,#1F3864,#2d5099);color:#fff;padding:12px 1rem;margin-bottom:1rem;border-radius:12px;display:flex;align-items:center;gap:10px}
+.install-banner-text{flex:1;font-size:12px;line-height:1.5}
+.install-banner-text strong{font-size:13px;display:block;margin-bottom:2px}
+.install-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}
+#install-banner{display:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-inner">
+    <div class="header-icon">🩸</div>
+    <div>
+      <h1>貧血鑑別アシスタント</h1>
+      <p>フローチャートに基づく鑑別支援</p>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">基本</div>
+  <div class="tab" onclick="switchTab(1)">Ret・MCV</div>
+  <div class="tab" onclick="switchTab(2)">溶血</div>
+  <div class="tab" onclick="switchTab(3)">鉄動態</div>
+  <div class="tab" onclick="switchTab(4)">結果</div>
+</div>
+
+<!-- Page 0: 基本情報 -->
+<div class="page active" id="page0">
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-text">
+      <strong>ホーム画面に追加</strong>
+      Safariの共有ボタン →「ホーム画面に追加」でアプリとして使えます
+    </div>
+    <button class="install-btn" onclick="document.getElementById('install-banner').style.display='none'">×</button>
+  </div>
+  <div class="section">
+    <div class="section-title">基本情報</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>Hb (g/dL)</label>
+        <input type="number" id="hb" step="0.1" placeholder="例: 9.5" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>年齢（歳）</label>
+        <input type="number" id="age" placeholder="例: 8" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>性別</label>
+      <select id="sex">
+        <option value="">選択してください</option>
+        <option value="male">男性</option>
+        <option value="female">女性</option>
+        <option value="pregnant">妊婦</option>
+      </select>
+    </div>
+  </div>
+  <div style="padding:0 0 0.5rem">
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+      <strong style="color:var(--text2)">WHO貧血基準（Hb g/dL）</strong><br>
+      6か月〜5歳未満: &lt;11 　 5〜12歳未満: &lt;11.5<br>
+      12〜15歳未満: &lt;12 　 15歳以上女性: &lt;12<br>
+      妊婦: &lt;11 　 15歳以上男性: &lt;13
+    </div>
+  </div>
+</div>
+
+<!-- Page 1: Ret・MCV -->
+<div class="page" id="page1">
+  <div class="section">
+    <div class="section-title">網赤血球・RPI</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>Ret (%)</label>
+        <input type="number" id="ret" step="0.01" placeholder="例: 1.5" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Ht (%)</label>
+        <input type="number" id="ht" step="0.1" placeholder="例: 28" inputmode="decimal">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);background:#eef4ff;border-radius:8px;padding:8px 10px;line-height:1.7">
+      RPI = (Ht/45) × Ret% ÷ maturation time<br>
+      maturation time: Ht≥40→1.0 / 30〜39→1.5 / 20〜29→2.0 / &lt;20→2.5<br>
+      RPI≥2: 正常反応・造血亢進 　 RPI&lt;2: 赤血球産生低下
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">MCV</div>
+    <div class="field">
+      <label>MCV (fL)</label>
+      <input type="number" id="mcv" step="0.1" placeholder="例: 72" inputmode="decimal">
+    </div>
+    <div style="font-size:11px;color:var(--text3);background:#f7f8fa;border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.7">
+      MCV(fL) = Ht(%) ÷ RBC(万/µL) × 1000<br>
+      &lt;80: 小球性 　 80〜100: 正球性 　 &gt;100: 大球性
+    </div>
+  </div>
+</div>
+
+<!-- Page 2: 溶血 -->
+<div class="page" id="page2">
+  <div class="section">
+    <div class="section-title">溶血所見</div>
+    <div class="field" style="margin-bottom:14px">
+      <label>溶血所見の有無</label>
+      <div class="radio-group">
+        <div class="radio-btn" id="hemolysis-yes" onclick="setR('hemolysis','yes')">あり</div>
+        <div class="radio-btn" id="hemolysis-no" onclick="setR('hemolysis','no')">なし</div>
+        <div class="radio-btn" id="hemolysis-unknown" onclick="setR('hemolysis','unknown')">不明</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>LDH (U/L)</label>
+        <input type="number" id="ldh" placeholder="上限 ~220" inputmode="numeric">
+        <span class="unit">正常上限 約220 U/L</span>
+      </div>
+      <div class="field">
+        <label>AST (U/L)</label>
+        <input type="number" id="ast" placeholder="上限 ~35" inputmode="numeric">
+        <span class="unit">正常上限 約35 U/L</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>間接ビリルビン (mg/dL)</label>
+      <input type="number" id="ibil" step="0.1" placeholder="上限 ~0.8" inputmode="decimal">
+      <span class="unit">正常上限 約0.8 mg/dL</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">直接Coombs試験</div>
+    <div class="radio-group">
+      <div class="radio-btn" id="coombs-pos" onclick="setR('coombs','pos')">陽性</div>
+      <div class="radio-btn" id="coombs-neg" onclick="setR('coombs','neg')">陰性</div>
+      <div class="radio-btn" id="coombs-nd" onclick="setR('coombs','nd')">未施行</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.7">
+      溶血所見あり → Coombs陽性: AIHA / 陰性: 先天性溶血・TMA・MDS
+    </div>
+  </div>
+</div>
+
+<!-- Page 3: 鉄動態 -->
+<div class="page" id="page3">
+  <div class="section">
+    <div class="section-title">鉄動態</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>フェリチン (ng/mL)</label>
+        <input type="number" id="ferritin" step="0.1" placeholder="例: 5" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Fe (µg/dL)</label>
+        <input type="number" id="fe" placeholder="例: 40" inputmode="numeric">
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="field">
+        <label>UIBC (µg/dL)</label>
+        <input type="number" id="uibc" placeholder="例: 280" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>TIBC (µg/dL)</label>
+        <input type="number" id="tibc" placeholder="例: 320" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label>TSAT (%)</label>
+      <input type="number" id="tsat" step="0.1" placeholder="例: 12（未入力→自動計算）" inputmode="decimal">
+      <span class="unit">Fe ÷ TIBC × 100　※ Fe・TIBCから自動計算も可能</span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);background:#fffbeb;border-radius:8px;padding:8px 10px;margin-top:12px;line-height:1.7">
+      フェリチン&lt;30 + TSAT&lt;20 → 鉄欠乏性貧血<br>
+      フェリチン高値 + TSAT&lt;20 → ACD（慢性疾患による貧血）<br>
+      フェリチン正常 + TSAT正常 + MCV&lt;80 → サラセミア疑い
+    </div>
+  </div>
+  <button class="btn-run" onclick="diagnose()">鑑別結果を見る →</button>
+</div>
+
+<!-- Page 4: 結果 -->
+<div class="page" id="page4">
+  <div class="result-wrap" id="result-wrap">
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-text">「鉄動態」タブから<br>「鑑別結果を見る」を押してください</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const st={hemolysis:'',coombs:''};
+let tabs=document.querySelectorAll('.tab');
+let pages=document.querySelectorAll('.page');
+function switchTab(i){
+  tabs.forEach((t,j)=>t.classList.toggle('active',i===j));
+  pages.forEach((p,j)=>p.classList.toggle('active',i===j));
+  if(i===4&&document.querySelector('.empty-state'))diagnose();
+}
+function setR(g,v){
+  st[g]=v;
+  document.querySelectorAll('[id^="'+g+'-"]').forEach(e=>e.classList.remove('active'));
+  document.getElementById(g+'-'+v).classList.add('active');
+}
+function g(id){const e=document.getElementById(id);if(!e)return null;const v=e.value.trim();return v===''?null:parseFloat(v)}
+function calcRPI(ret,ht){
+  if(ret==null||ht==null)return null;
+  let mt=1.0;
+  if(ht<20)mt=2.5;else if(ht<30)mt=2.0;else if(ht<40)mt=1.5;
+  return(ht/45)*ret/mt;
+}
+function calcTSAT(fe,tibc){if(fe==null||tibc==null||tibc===0)return null;return(fe/tibc)*100}
+function isAnemic(hb,age,sex){
+  if(hb==null||age==null)return null;
+  let t=null;
+  if(age<0.5)return null;
+  if(age<5)t=11.0;else if(age<12)t=11.5;else if(age<15)t=12.0;
+  else{if(sex==='male')t=13.0;else if(sex==='pregnant')t=11.0;else t=12.0;}
+  return hb<t;
+}
+function bdg(text,type){return'<span class="badge badge-'+type+'">'+text+'</span>'}
+function diagnose(){
+  const hb=g('hb'),age=g('age'),ret=g('ret'),ht=g('ht'),mcv=g('mcv');
+  const ldh=g('ldh'),ast=g('ast'),ibil=g('ibil');
+  const ferritin=g('ferritin'),fe=g('fe'),uibc=g('uibc'),tibc=g('tibc');
+  let tsat=g('tsat');
+  const sex=document.getElementById('sex').value;
+  const hemolysis=st.hemolysis,coombs=st.coombs;
+  let tsatCalced=false;
+  if(tsat==null&&fe!=null&&tibc!=null){tsat=calcTSAT(fe,tibc);tsatCalced=true;}
+  const rpi=calcRPI(ret,ht);
+  const anemic=isAnemic(hb,age,sex);
+  const retHigh=ret!=null?ret>2.0:null;
+  const ldhHigh=ldh!=null?ldh>220:null;
+  const ibilHigh=ibil!=null?ibil>0.8:null;
+  const hemolysisPresent=hemolysis==='yes'||(hemolysis!=='no'&&(ldhHigh||ibilHigh));
+  let diagnoses=[],nextSteps=[],warns=[];
+  if(hb!=null&&age!=null&&sex&&anemic===false)warns.push('入力値では貧血の基準を満たしていません（年齢・性別の閾値を確認）');
+  if(retHigh){
+    if(hemolysisPresent){
+      if(coombs==='pos'){
+        diagnoses.push({name:'自己免疫性溶血性貧血（AIHA）',badge:'red',desc:'直接Coombs陽性。ステロイドなどの免疫抑制療法を考慮。'});
+        nextSteps.push('血液内科コンサルト','末梢血塗抹','ハプトグロビン測定');
+      }else if(coombs==='neg'){
+        diagnoses.push({name:'先天性溶血性貧血',badge:'amber',desc:'遺伝性球状赤血球症など。家族歴・末梢血塗抹で確認。'});
+        diagnoses.push({name:'TMAなどの機械的溶血',badge:'amber',desc:'血小板減少あり → HUS・TTPを疑う。破砕赤血球を確認。'});
+        diagnoses.push({name:'MDS（無効造血）',badge:'amber',desc:'末梢血に異形成があれば骨髄検査を検討。'});
+        nextSteps.push('ハプトグロビン測定','末梢血塗抹（球状赤血球・破砕赤血球）','血小板数確認','家族歴聴取');
+      }else{
+        diagnoses.push({name:'溶血性貧血（Coombs施行推奨）',badge:'amber',desc:'AIHA vs 非免疫性溶血の鑑別のため直接Coombs試験が必要。'});
+        nextSteps.push('直接Coombs試験','ハプトグロビン測定','末梢血塗抹');
+      }
+    }else{
+      diagnoses.push({name:'出血による貧血',badge:'blue',desc:'Ret上昇・溶血所見なし → 急性または慢性出血による骨髄反応。'});
+      nextSteps.push('出血源の検索（消化管・泌尿器・月経など）','便潜血','腹部エコー');
+    }
+  }else if(ret!=null&&!retHigh){
+    if(mcv!=null){
+      if(mcv<80){
+        if(ferritin!=null&&tsat!=null){
+          if(ferritin<30&&tsat<20){
+            diagnoses.push({name:'鉄欠乏性貧血',badge:'blue',desc:'フェリチン<30かつTSAT<20 → 典型的な鉄欠乏パターン。'});
+            nextSteps.push('鉄剤補充（経口または静注）','鉄欠乏の原因検索（食事・出血・吸収不全）');
+          }else if(ferritin>=30&&tsat<20){
+            diagnoses.push({name:'慢性疾患に伴う貧血（ACD）',badge:'amber',desc:'フェリチン高値・TSAT低値 → 炎症による鉄利用障害。基礎疾患を検索。'});
+            nextSteps.push('基礎疾患の評価・治療','CRP・炎症マーカー確認');
+          }else if(tsat>=20){
+            diagnoses.push({name:'サラセミア',badge:'amber',desc:'鉄動態正常で小球性 → Mentzer index<13はサラセミアを示唆。'});
+            diagnoses.push({name:'Hb異常症',badge:'amber',desc:'Hb電気泳動で確認。'});
+            nextSteps.push('Mentzer index（MCV÷RBC）','Hb電気泳動','家族歴確認');
+          }else{
+            diagnoses.push({name:'小球性貧血（追加検査要）',badge:'amber',desc:'フェリチン・TSATの組み合わせで鑑別を絞り込む。'});
+            nextSteps.push('フェリチン・TSAT・Fe・TIBC測定');
+          }
+        }else{
+          diagnoses.push({name:'小球性貧血（MCV<80）',badge:'blue',desc:'鉄欠乏性貧血・ACD・サラセミア・Hb異常症が主な鑑別。'});
+          nextSteps.push('フェリチン・Fe・UIBC・TIBC・TSAT測定','Mentzer index算出（MCV÷RBC）');
+        }
+      }else if(mcv<=100){
+        diagnoses.push({name:'正球性貧血（MCV 80〜100）',badge:'blue',desc:'汎血球減少の有無で鑑別が分かれる。'});
+        diagnoses.push({name:'再生不良性貧血 / MDS',badge:'amber',desc:'WBC・Plt低下を伴う場合は骨髄検査が必要。'});
+        diagnoses.push({name:'腎性貧血',badge:'blue',desc:'EPO産生低下。BUN・Crで腎機能を確認。'});
+        if(ferritin!=null&&ferritin<30)diagnoses.push({name:'初期の鉄欠乏性貧血',badge:'amber',desc:'フェリチン低値 → MCVが正常でも初期鉄欠乏の可能性あり。'});
+        diagnoses.push({name:'ACDの初期',badge:'amber',desc:'フェリチン上昇していれば慢性炎症を背景とした貧血を考慮。'});
+        nextSteps.push('WBC・Plt確認','BUN・Cr（腎機能）','骨髄検査の適応検討');
+      }else{
+        diagnoses.push({name:'大球性貧血（MCV>100）',badge:'blue',desc:'巨赤芽球性貧血（B₁₂・葉酸欠乏）、アルコール、肝疾患、甲状腺機能低下を確認。'});
+        diagnoses.push({name:'MDS',badge:'amber',desc:'大球性を呈するMDSもある。末梢血塗抹で異形成を確認。'});
+        nextSteps.push('ビタミンB₁₂・葉酸測定','甲状腺機能（TSH・FT4）','肝機能・γ-GTP','アルコール歴聴取');
+      }
+    }else{
+      diagnoses.push({name:'赤血球産生低下による貧血',badge:'blue',desc:'Ret正常〜低下。MCVを確認すると鑑別が絞られる。'});
+      nextSteps.push('MCV確認（分岐点）');
+    }
+  }else{
+    diagnoses.push({name:'Ret（網赤血球数）の入力が必要',badge:'amber',desc:'Retで産生亢進か産生低下かを判断します。「Ret・MCV」タブへ。'});
+    nextSteps.push('Ret（網赤血球数）測定','MCV確認');
+  }
+  let out='';
+  warns.forEach(w=>{out+=`<div class="warn-card">${w}</div>`});
+  if(rpi!=null){
+    const ok=rpi>=2;
+    out+=`<div class="rpi-card">
+      <div class="rpi-label">RPI（網赤血球産生指数）</div>
+      <div><span class="rpi-val" style="color:${ok?'var(--navy)':'var(--red)'}">${rpi.toFixed(2)}</span>
+      <span style="font-size:12px;font-weight:600;color:${ok?'var(--blue)':'var(--red)'};margin-left:8px">${ok?'≥2 造血亢進':'<2 産生低下'}</span></div>
+      <div class="rpi-desc">Ht=${ht}%, Ret=${ret}%　→　(${ht}/45)×${ret}÷maturation time</div>
+    </div>`;
+  }
+  if(tsatCalced&&tsat!=null){
+    out+=`<div class="calc-card">TSAT自動計算: <strong>${tsat.toFixed(1)}%</strong>　(Fe ${fe} ÷ TIBC ${tibc} × 100)</div>`;
+  }
+  diagnoses.forEach(d=>{
+    out+=`<div class="dx-card">
+      <div class="dx-header-row">${bdg(d.badge==='red'?'要注意':d.badge==='amber'?'要精査':'考慮',d.badge)}</div>
+      <div class="dx-name" style="margin-bottom:6px">${d.name}</div>
+      <div class="dx-desc">${d.desc}</div>
+    </div>`;
+  });
+  if(nextSteps.length){
+    out+=`<div class="next-card"><div class="next-title">推奨される次のステップ</div><ul class="next-list">${nextSteps.map(s=>`<li>${s}</li>`).join('')}</ul></div>`;
+  }
+  out+=`<div class="disclaimer">このアプリは臨床判断の補助ツールです。確定診断・治療方針は必ず医師による総合的な臨床評価に基づいてください。</div>`;
+  document.getElementById('result-wrap').innerHTML=out;
+  switchTab(4);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// PWA Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// iOSでのインストールバナー
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone=window.matchMedia('(display-mode: standalone)').matches;
+if(isIOS&&!isStandalone){
+  document.getElementById('install-banner').style.display='flex';
+}
+</script>
+</body>
+</html>

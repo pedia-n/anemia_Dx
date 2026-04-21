@@ -1,0 +1,17 @@
+{
+  "name": "貧血鑑別アシスタント",
+  "short_name": "貧血鑑別",
+  "description": "小児科・内科向け貧血フローチャート鑑別支援アプリ",
+  "start_url": "./anemia_pwa.html",
+  "display": "standalone",
+  "background_color": "#1F3864",
+  "theme_color": "#1F3864",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231F3864'/><text x='96' y='130' font-size='100' text-anchor='middle'>🩸</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
