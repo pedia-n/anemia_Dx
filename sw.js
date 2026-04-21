@@ -1,5 +1,5 @@
-const CACHE='anemia-v1';
-const FILES=['./anemia_pwa.html','./manifest.json'];
+const CACHE='anemia-v2';
+const FILES=['./index.html','./manifest.json'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));
   self.skipWaiting();
